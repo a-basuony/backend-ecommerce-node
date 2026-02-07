@@ -19,37 +19,52 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const __dirname = path.resolve();
+// 1. Trust Proxy - ضروري جداً لعمل الكوكيز على Vercel
+app.set("trust proxy", 1);
 
-// 1. CORS MUST BE FIRST
+// 2. Dynamic CORS Configuration
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://e-commerce-full-stack-mern.vercel.app",
+  process.env.CLIENT_URL,
+].filter(Boolean); // يحذف أي قيم undefined
+
 const corsOptions = {
-  origin: [
-    "http://localhost:5173",
-    "https://e-commerce-full-stack-mern.vercel.app",
-    process.env.CLIENT_URL,
-  ],
+  origin: function (origin, callback) {
+    // السماح بالطلبات التي ليس لها origin (مثل الـ mobile apps أو curl)
+    // أو الطلبات التي تنتهي بـ .vercel.app أو الموجودة في القائمة
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      origin.endsWith(".vercel.app") ||
+      origin.includes("vercel.app")
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "set-cookie"],
 };
-app.set("trust proxy", 1);
 
 app.use(cors(corsOptions));
 
-// 2. Pre-flight check (Optional but helps with Vercel)
-app.options("*", cors(corsOptions));
-
-app.use(express.json({ limit: "10mb" })); // allows you to parse the body of the request
+// 3. Middleware
+app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
+// Test Route
 app.get("/api/test", (req, res) => {
   res.json({
-    message: "Backend is running successfully on Vercel!",
-    time: new Date().toISOString(),
+    message: "Backend is running successfully!",
     env: process.env.NODE_ENV,
+    origin: req.headers.origin,
   });
 });
 
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
@@ -57,18 +72,9 @@ app.use("/api/coupons", couponRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
-// if (process.env.NODE_ENV === "production") {
-//   app.use(express.static(path.join(__dirname, "/frontend/dist")));
-
-//   app.get("*", (req, res) => {
-//     res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
-//   });
-// }
-
-// Connect to the database once at module load so serverless functions can reuse the connection
+// Database Connection
 connectDB();
 
-// When running locally or not on Vercel start the HTTP server.
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log("Server is running on http://localhost:" + PORT);

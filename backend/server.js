@@ -26,11 +26,14 @@ const corsOptions = {
   origin: [
     "http://localhost:5173",
     "https://e-commerce-full-stack-mern.vercel.app",
+    process.env.CLIENT_URL,
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
+app.set("trust proxy", 1);
+
 app.use(cors(corsOptions));
 
 // 2. Pre-flight check (Optional but helps with Vercel)

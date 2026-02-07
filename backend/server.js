@@ -22,8 +22,12 @@ const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
 const corsOptions = {
-  origin: process.env.CLIENT_URL || "http://localhost:5173", // Replace with your frontend URL
-  credentials: true, // Allow cookies to be sent
+  // REMOVE the trailing slash from the URL string
+  origin: [
+    "http://localhost:5173",
+    "https://e-commerce-full-stack-mern.vercel.app/",
+  ],
+  credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };

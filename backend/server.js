@@ -21,8 +21,8 @@ const PORT = process.env.PORT || 5000;
 
 const __dirname = path.resolve();
 
+// 1. CORS MUST BE FIRST
 const corsOptions = {
-  // REMOVE the trailing slash from the URL string
   origin: [
     "http://localhost:5173",
     "https://e-commerce-full-stack-mern.vercel.app",
@@ -31,8 +31,10 @@ const corsOptions = {
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
-
 app.use(cors(corsOptions));
+
+// 2. Pre-flight check (Optional but helps with Vercel)
+app.options("*", cors(corsOptions));
 
 app.use(express.json({ limit: "10mb" })); // allows you to parse the body of the request
 app.use(cookieParser());

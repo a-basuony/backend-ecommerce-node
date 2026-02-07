@@ -25,7 +25,7 @@ const corsOptions = {
   // REMOVE the trailing slash from the URL string
   origin: [
     "http://localhost:5173",
-    "https://e-commerce-full-stack-mern.vercel.app/",
+    "https://e-commerce-full-stack-mern.vercel.app",
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
